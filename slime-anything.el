@@ -1,22 +1,25 @@
-;;
-;; TODO
-;; - Narrow slime-describe-symbol's pop-up window when invoked through
-;;   anything-persistent-action.
-;;
-
 (require 'slime)
 (require 'slime-fuzzy)
 (require 'slime-c-p-c)
 (require 'anything)
 (require 'anything-complete)
 
+(defun anything-slime-describe-symbol (sym)
+  (when anything-in-persistent-action
+    (let ((tmp (or (get-buffer-window-and-frame "*SLIME Description*")
+                   (list
+                    (select-window (split-window-vertically
+                                    (* (/ (window-height) 3) 2)))
+                    (selected-frame)))))
+      (apply #'select-window-and-frame tmp))
+    (slime-describe-symbol sym)))
+
 (add-to-list 'anything-type-attributes
              '(slime-anything
-               (action . (("Insert" . ac-insert)
-                          ("Describe symbol" . slime-describe-symbol)))
-               (persistent-action . (lambda (sym)
-                                      (with-anything-window
-                                        (slime-describe-symbol sym))))
+               (action
+                . (("Insert" . ac-insert)
+                   ("Describe symbol" . anything-slime-describe-symbol)))
+               (persistent-action . anything-slime-describe-symbol)
                (volatile)))
 
 (defvar anything-c-source-slime-simple-complete
