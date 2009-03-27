@@ -18,9 +18,19 @@
              '(slime-anything
                (action
                 . (("Insert" . ac-insert)
-                   ("Describe symbol" . anything-slime-describe-symbol)))
+                   ("Describe symbol" . anything-slime-describe-symbol)
+                   ("Edit definition" . slime-edit-definition)))
                (persistent-action . anything-slime-describe-symbol)
                (volatile)))
+
+;; (progn
+;;   (define-key anything-map "\C-d" (lambda ()
+;;                                     (interactive)
+;;                                     (anything-execute-persistent-action
+;;                                      'persistent-action-2)))
+;;   (dolist (x anything-slime-complete-sources)
+;;     (add-to-list x
+;;                  '(persistent-action-2 . slime-edit-definition))))
 
 (defvar anything-c-source-slime-simple-complete
   '((name . "slime simple complete")
@@ -53,15 +63,27 @@
 (defun anything-slime-complete ()
   "Select a symbol from slime's completion systems."
   (interactive)
-  (anything-complete
-   (if (eq major-mode 'clojure-mode)
-     (remove 'anything-c-source-slime-fuzzy-complete
-             anything-slime-complete-sources)
-     anything-slime-complete-sources)
-   (let* ((end (move-marker (make-marker) (slime-symbol-end-pos)))
-          (beg (move-marker (make-marker) (slime-symbol-start-pos))))
-     (buffer-substring-no-properties beg end))))
+  (let ((neg #'(lambda (source)
+                 (when (symbolp source)
+                       (setq source (symbol-value source)))
+                 (anything-aif (assoc-default 'sa-ignore-connections source)
+                               (member (slime-connection-name) it)))))
+    (anything-complete
+     (remove-if neg anything-slime-complete-sources)
+     (let* ((end (move-marker (make-marker) (slime-symbol-end-pos)))
+            (beg (move-marker (make-marker) (slime-symbol-start-pos))))
+       (buffer-substring-no-properties beg end)))))
 
-;; (define-key slime-mode-map "\C-o" 'anything-slime-complete)
+(defun slime-anything-init ()
+  "Initialize builtin slime anything environment."
+  (interactive)
+  (slime-anything-bind-keys)
+  (add-to-list 'anything-c-source-slime-fuzzy-complete
+               '(sa-ignore-connections . ("clojure"))))
+
+(defun slime-anything-bind-keys ()
+  (progn
+    (define-key slime-mode-map "\C-o" 'anything-slime-complete)
+    (define-key slime-repl-mode-map "\C-o" 'anything-slime-complete)))
 
 (provide 'slime-anything)
