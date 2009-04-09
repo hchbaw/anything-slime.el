@@ -31,7 +31,7 @@
 ;; load-path. Also set up slime properly. Finally call `slime-setup' and
 ;; include 'anything-slime as argument:
 ;;
-;;   (slime-setup '(anything-slime [others contribs ...]))
+;;   (slime-setup '([others contribs ...] anything-slime))
 ;;
 
 ;;; Commands:
@@ -44,10 +44,12 @@
 ;;    Yet another `slime-list-connections' with `anything'.
 ;;
 
-(require 'slime-fuzzy)
-(require 'slime-c-p-c)
 (require 'anything)
 (require 'anything-complete)
+(require 'slime)
+(require 'slime-c-p-c)
+(require 'slime-fuzzy)
+(require 'slime-repl)
 
 (defmacro with-anything-slime-symbol-position (beg end &rest body)
   `(let* ((,end (move-marker (make-marker) (slime-symbol-end-pos)))
@@ -92,8 +94,8 @@
 
 (defvar anything-slime-complete-sources
   '(anything-c-source-slime-simple-complete
-    anything-c-source-slime-compound-complete
-    anything-c-source-slime-fuzzy-complete))
+    anything-c-source-slime-fuzzy-complete
+    anything-c-source-slime-compound-complete))
 
 (defun anything-slime-complete ()
   "Select a symbol from slime's completion systems."
@@ -134,6 +136,50 @@
   (when (not anything-source-name)
     ad-do-it))
 (ad-activate 'anything-slime-update-connection-list)
+
+(add-to-list 'anything-type-attributes
+             '(anything-slime-apropos
+               (action
+                . (("Describe symbol" . slime-describe-symbol)
+                   ("Edit definition" . slime-edit-definition)))
+               (persistent-action . slime-describe-symbol)
+               (requires-pattern . 2)))
+
+(defun anything-slime-apropos-candidates (name &rest slime-expressions)
+  `((name . ,name)
+    (candidates
+     . (lambda ()
+         (with-current-buffer anything-current-buffer
+           (loop for plist in (slime-eval ,@slime-expressions)
+                 collect (plist-get plist :designator)))))
+    (type . anything-slime-apropos)))
+(defvar anything-c-source-slime-apropos-symbol-current-package
+  (anything-slime-apropos-candidates "slime apropos (current package)"
+                                     '`(swank:apropos-list-for-emacs
+                                        ,anything-pattern
+                                        nil
+                                        nil
+                                        ,(or slime-buffer-package
+                                             (slime-current-package)))))
+(defvar anything-c-source-slime-apropos-symbol-external-package
+  (anything-slime-apropos-candidates "slime apropos (external package)"
+                                     '`(swank:apropos-list-for-emacs
+                                        ,anything-pattern
+                                        t
+                                        nil
+                                        ,(or slime-buffer-package
+                                             (slime-current-package)))))
+(defvar anything-c-source-slime-apropos-symbol-all
+  (anything-slime-apropos-candidates "slime apropos (all)"
+                                     '`(swank:apropos-list-for-emacs
+                                        ,anything-pattern
+                                        nil
+                                        nil
+                                        nil)))
+(defvar anything-slime-apropos-sources
+  '(anything-c-source-slime-apropos-symbol-current-package
+    anything-c-source-slime-apropos-symbol-external-package
+    anything-c-source-slime-apropos-symbol-all))
 
 (defun anything-slime-init ()
   (run-hooks 'anything-slime-init-hook))
