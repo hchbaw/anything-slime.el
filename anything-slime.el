@@ -1,8 +1,8 @@
 ;;; anything-slime.el --- anything-sources and some utilities for slime.
 
-;; Copyright (C) 2009 Takeshi Banse <hchbaw@laafc.net>
+;; Copyright (C) 2009 Takeshi Banse <takebi@laafc.net>
 
-;; Author: Takeshi Banse <hchbaw@laafc.net>
+;; Author: Takeshi Banse <takebi@laafc.net>
 ;; Keywords: anything, slime
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/anything-slime.el
 
@@ -145,7 +145,7 @@
                (persistent-action . slime-describe-symbol)
                (requires-pattern . 2)))
 
-(defun anything-slime-apropos-candidates (name &rest slime-expressions)
+(defun anything-slime-apropos-source (name &rest slime-expressions)
   `((name . ,name)
     (candidates
      . (lambda ()
@@ -154,28 +154,28 @@
                  collect (plist-get plist :designator)))))
     (type . anything-slime-apropos)))
 (defvar anything-c-source-slime-apropos-symbol-current-package
-  (anything-slime-apropos-candidates "slime apropos (current package)"
-                                     '`(swank:apropos-list-for-emacs
-                                        ,anything-pattern
-                                        nil
-                                        nil
-                                        ,(or slime-buffer-package
-                                             (slime-current-package)))))
+  (anything-slime-apropos-source "slime apropos (current package)"
+                                 '`(swank:apropos-list-for-emacs
+                                    ,anything-pattern
+                                    nil
+                                    nil
+                                    ,(or slime-buffer-package
+                                         (slime-current-package)))))
 (defvar anything-c-source-slime-apropos-symbol-external-package
-  (anything-slime-apropos-candidates "slime apropos (external package)"
-                                     '`(swank:apropos-list-for-emacs
-                                        ,anything-pattern
-                                        t
-                                        nil
-                                        ,(or slime-buffer-package
-                                             (slime-current-package)))))
+  (anything-slime-apropos-source "slime apropos (external package)"
+                                 '`(swank:apropos-list-for-emacs
+                                    ,anything-pattern
+                                    t
+                                    nil
+                                    ,(or slime-buffer-package
+                                         (slime-current-package)))))
 (defvar anything-c-source-slime-apropos-symbol-all
-  (anything-slime-apropos-candidates "slime apropos (all)"
-                                     '`(swank:apropos-list-for-emacs
-                                        ,anything-pattern
-                                        nil
-                                        nil
-                                        nil)))
+  (anything-slime-apropos-source "slime apropos (all)"
+                                 '`(swank:apropos-list-for-emacs
+                                    ,anything-pattern
+                                    nil
+                                    nil
+                                    nil)))
 (defvar anything-slime-apropos-sources
   '(anything-c-source-slime-apropos-symbol-current-package
     anything-c-source-slime-apropos-symbol-external-package
