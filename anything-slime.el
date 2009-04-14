@@ -14,7 +14,6 @@
 ;; This file is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
@@ -60,14 +59,14 @@
 (defun anything-slime-symbol-position-funcall (f)
   (with-anything-slime-symbol-position beg end (funcall f beg end)))
 
-(add-to-list 'anything-type-attributes
-             '(anything-slime-complete
-               (action
-                . (("Insert" . ac-insert)
-                   ("Describe symbol" . slime-describe-symbol)
-                   ("Edit definition" . slime-edit-definition)))
-               (persistent-action . slime-describe-symbol)
-               (volatile)))
+(define-anything-type-attribute 'anything-slime-complete
+  '((action
+     . (("Insert" . ac-insert)
+        ("Describe symbol" . slime-describe-symbol)
+        ("Edit definition" . slime-edit-definition)))
+    (persistent-action . slime-describe-symbol)
+    (volatile))
+  "Slime complete.")
 
 (defvar anything-c-source-slime-simple-complete
   '((name . "slime simple complete")
@@ -136,13 +135,13 @@
     ad-do-it))
 (ad-activate 'anything-slime-update-connection-list)
 
-(add-to-list 'anything-type-attributes
-             '(anything-slime-apropos
-               (action
-                . (("Describe symbol" . slime-describe-symbol)
-                   ("Edit definition" . slime-edit-definition)))
-               (persistent-action . slime-describe-symbol)
-               (requires-pattern . 2)))
+(define-anything-type-attribute 'anything-slime-apropos
+  '((action
+     . (("Describe symbol" . slime-describe-symbol)
+        ("Edit definition" . slime-edit-definition)))
+    (persistent-action . slime-describe-symbol)
+    (requires-pattern . 2))
+  "Slime apropos.")
 
 (defun anything-slime-apropos-source (name &rest slime-expressions)
   `((name . ,name)
