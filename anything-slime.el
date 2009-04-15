@@ -68,13 +68,15 @@
     (volatile))
   "Slime complete.")
 
-(defvar anything-c-source-slime-simple-complete
+;; I do not want to make anything-c-source-* symbols because they are
+;; private in `anything-slime-complete'.
+(defvar anything-slime-simple-complete-source
   '((name . "slime simple complete")
     (candidates
      . (lambda ()
          (car (slime-simple-completions anything-complete-target))))
     (type . anything-slime-complete)))
-(defvar anything-c-source-slime-compound-complete
+(defvar anything-slime-compound-complete-source
   '((name . "slime compound complete")
     (candidates
      . (lambda ()
@@ -82,7 +84,7 @@
            (car (anything-slime-symbol-position-funcall
                  #'slime-contextual-completions)))))
     (type . anything-slime-complete)))
-(defvar anything-c-source-slime-fuzzy-complete
+(defvar anything-slime-fuzzy-complete-source
   '((name . "slime fuzzy complete")
     (candidates
      . (lambda ()
@@ -91,9 +93,9 @@
     (type . anything-slime-complete)))
 
 (defvar anything-slime-complete-sources
-  '(anything-c-source-slime-simple-complete
-    anything-c-source-slime-fuzzy-complete
-    anything-c-source-slime-compound-complete))
+  '(anything-slime-simple-complete-source
+    anything-slime-fuzzy-complete-source
+    anything-slime-compound-complete-source))
 
 (defun anything-slime-complete ()
   "Select a symbol from slime's completion systems."
