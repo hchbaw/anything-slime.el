@@ -33,7 +33,7 @@
 ;;
 ;;   (slime-setup '([others contribs ...] anything-slime))
 ;;
-;; or simply require anything-slime.
+;; or simply require anything-slime in some appropriate manner.
 
 ;;; Commands:
 ;;
@@ -55,6 +55,10 @@
 (require 'slime-c-p-c)
 (require 'slime-fuzzy)
 (require 'slime-repl)
+
+(when (require 'anything-show-completion nil t)
+  (use-anything-show-completion 'anything-slime-complete
+                                '(length anything-complete-target)))
 
 (defun ascsa-symbol-position-funcall (f)
   (let* ((end (move-marker (make-marker) (point)))
@@ -96,18 +100,37 @@
            (car (ascsa-symbol-position-funcall
                  #'slime-contextual-completions)))))
     (type . anything-slime-complete)))
-
 (defvar anything-slime-complete-sources
   '(anything-slime-simple-complete-source
     anything-slime-fuzzy-complete-source
     anything-slime-compound-complete-source))
 
+;; Copied from the anything-complete.el and added an optional parameter
+;; `target-is-default-input-p' to not defaulting the target for some kind of
+;; the compound/fuzzy completes.
+(defun ascsa-anything-noresume (&optional any-sources any-input any-prompt any-resume any-preselect any-buffer)
+  (let (anything-last-sources anything-compiled-sources anything-last-buffer)
+    (anything any-sources any-input any-prompt any-resume any-preselect any-buffer)))
+
+(defun ascsa-anything-complete (sources target &optional limit idle-delay input-idle-delay target-is-default-input-p)
+  (let ((anything-candidate-number-limit (or limit anything-candidate-number-limit))
+        (anything-idle-delay (or idle-delay anything-idle-delay))
+        (anything-input-idle-delay (or input-idle-delay anything-input-idle-delay))
+        (anything-complete-target target)
+        (anything-execute-action-at-once-if-one t)
+        (enable-recursive-minibuffers t)
+        anything-samewindow)
+    (ascsa-anything-noresume sources (if target-is-default-input-p target nil)
+                             nil nil nil "*anything complete*")))
+
+(defalias 'ascsa-complete 'ascsa-anything-complete)
+
 (defun anything-slime-complete ()
   "Select a symbol from the SLIME's completion systems."
   (interactive)
-  (anything-complete anything-slime-complete-sources
-                     (ascsa-symbol-position-funcall
-                      #'buffer-substring-no-properties)))
+  (ascsa-complete anything-slime-complete-sources
+                  (ascsa-symbol-position-funcall
+                   #'buffer-substring-no-properties)))
 
 (defvar anything-c-source-slime-connection
   '((name . "SLIME connections")
