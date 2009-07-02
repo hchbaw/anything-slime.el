@@ -230,3 +230,4 @@
   (run-hooks 'anything-slime-init-hook))
 
 (provide 'anything-slime)
+;;; anything-slime.el ends here
