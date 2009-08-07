@@ -46,7 +46,7 @@
 ;;  `anything-slime-apropos'
 ;;    Yet another `slime-apropos' with `anything'.
 ;;  `anything-slime-repl-history'
-;;    Select an input from the SLIE repl's history and insert it.
+;;    Select an input from the SLIME repl's history and insert it.
 ;;
 
 ;;; Code:
@@ -235,7 +235,7 @@
     (multiline)
     (action . ,(slime-curry #'slime-repl-history-replace 'backward))))
 (defun anything-slime-repl-history ()
-  "Select an input from the SLIE repl's history and insert it."
+  "Select an input from the SLIME repl's history and insert it."
   (interactive)
   (ascsa-complete 'anything-c-source-slime-repl-history
                   (ascsa-symbol-position-funcall 
