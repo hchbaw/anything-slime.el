@@ -64,7 +64,7 @@
   (let* ((end (move-marker (make-marker) (point)))
          (beg (move-marker (make-marker) (slime-symbol-start-pos))))
     (unwind-protect
-        (progn (funcall f beg end))
+        (funcall f beg end)
       (set-marker end nil)
       (set-marker beg nil))))
 
@@ -189,8 +189,8 @@
                            nil
                            ,(or slime-buffer-package
                                 (slime-current-package))))))
-(defvar anything-c-source-slime-apropos-symbol-external-package
-  (ascsa-apropos-source "SLIME apropos (external package)"
+(defvar anything-c-source-slime-apropos-symbol-current-external-package
+  (ascsa-apropos-source "SLIME apropos (current external package)"
                         (quote
                          `(swank:apropos-list-for-emacs
                            ,anything-pattern
@@ -216,7 +216,7 @@
                            nil))))
 (defvar anything-slime-apropos-sources
   '(anything-c-source-slime-apropos-symbol-current-package
-    anything-c-source-slime-apropos-symbol-external-package
+    anything-c-source-slime-apropos-symbol-current-external-package
     anything-c-source-slime-apropos-symbol-all-external-package
     anything-c-source-slime-apropos-symbol-all-package))
 
