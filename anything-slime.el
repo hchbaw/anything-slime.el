@@ -45,6 +45,8 @@
 ;;    Yet another `slime-list-connections' with `anything'.
 ;;  `anything-slime-apropos'
 ;;    Yet another `slime-apropos' with `anything'.
+;;  `anything-slime-repl-history'
+;;    Select an input from the SLIE repl's history and insert it.
 ;;
 
 ;;; Code:
@@ -225,6 +227,20 @@
   (interactive)
   (anything anything-slime-apropos-sources
             nil nil nil nil "*anything SLIME apropos*"))
+
+(defvar anything-c-source-slime-repl-history
+  `((name . "SLIME repl history")
+    (candidates . ,(with-current-buffer (slime-connection-output-buffer)
+                     slime-repl-input-history))
+    (multiline)
+    (action . ,(slime-curry #'slime-repl-history-replace 'backward))))
+(defun anything-slime-repl-history ()
+  "Select an input from the SLIE repl's history and insert it."
+  (interactive)
+  (ascsa-complete 'anything-c-source-slime-repl-history
+                  (ascsa-symbol-position-funcall 
+                   #'buffer-substring-no-properties)
+                  nil nil nil t))
 
 (defun anything-slime-init ()
   (run-hooks 'anything-slime-init-hook))
