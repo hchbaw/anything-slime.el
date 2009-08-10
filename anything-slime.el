@@ -225,8 +225,8 @@
 (defun anything-slime-apropos ()
   "Yet another `slime-apropos' with `anything'."
   (interactive)
-  (anything anything-slime-apropos-sources
-            nil nil nil nil "*anything SLIME apropos*"))
+  (anything-other-buffer anything-slime-apropos-sources
+                         "*anything SLIME apropos*"))
 
 (defvar anything-c-source-slime-repl-history
   `((name . "SLIME repl history")
