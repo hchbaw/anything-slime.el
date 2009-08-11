@@ -231,8 +231,10 @@
 
 (defvar anything-c-source-slime-repl-history
   `((name . "SLIME repl history")
-    (candidates . ,(with-current-buffer (slime-connection-output-buffer)
-                     slime-repl-input-history))
+    (candidates
+     . (lambda ()
+         (with-current-buffer (slime-connection-output-buffer)
+           slime-repl-input-history)))
     (multiline)
     (action . ,(slime-curry #'slime-repl-history-replace 'backward))))
 (defun anything-slime-repl-history ()
