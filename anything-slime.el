@@ -62,9 +62,10 @@
   (use-anything-show-completion 'anything-slime-complete
                                 '(length anything-complete-target)))
 
-(defun ascsa-symbol-position-funcall (f)
-  (let* ((end (move-marker (make-marker) (point)))
-         (beg (move-marker (make-marker) (slime-symbol-start-pos))))
+(defun* ascsa-symbol-position-funcall
+    (f &optional (end-pt (point)) (beg-pt (slime-symbol-start-pos)))
+  (let* ((end (move-marker (make-marker) end-pt))
+         (beg (move-marker (make-marker) beg-pt)))
     (unwind-protect
         (funcall f beg end)
       (set-marker end nil)
@@ -238,8 +239,10 @@
   "Select an input from the SLIME repl's history and insert it."
   (interactive)
   (ascsa-complete 'anything-c-source-slime-repl-history
-                  (ascsa-symbol-position-funcall 
-                   #'buffer-substring-no-properties)
+                  (ascsa-symbol-position-funcall
+                   #'buffer-substring-no-properties
+                   (point)
+                   slime-repl-input-start-mark)
                   nil nil nil t))
 
 (defun anything-slime-init ()
