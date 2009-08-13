@@ -139,18 +139,23 @@
   '((name . "SLIME connections")
     (candidates
      . (lambda ()
-         (let* ((default slime-default-connection)
-                (collect (lambda (con)
-                           (cons
-                            (if (eq default con)
-                              (concat "* " (slime-connection-name con))
-                              (slime-connection-name con))
-                            con))))
+         (let ((default slime-default-connection)
+               (fstring "%s%2s  %-10s  %-17s  %-7s %-s")
+               (collect (lambda (p)
+                          (cons
+                           (format fstring
+                                   (if (eq default p) "*" " ")
+                                   (slime-connection-number p)
+                                   (slime-connection-name p)
+                                   (or (process-id p) (process-contact p))
+                                   (slime-pid p)
+                                   (slime-lisp-implementation-type p))
+                           p))))
            (mapcar collect (reverse slime-net-processes)))))
     (action
      . (("Go to repl"
-         . (lambda (con)
-             (let ((slime-dispatching-connection con))
+         . (lambda (p)
+             (let ((slime-dispatching-connection p))
                (switch-to-buffer (slime-output-buffer)))))
         ("Set default" . slime-select-connection)
         ("Restart" . slime-restart-connection-at-point)
