@@ -109,7 +109,7 @@
     anything-slime-compound-complete-source))
 
 ;; Copied from the anything-complete.el and added an optional parameter
-;; `target-is-default-input-p' to not defaulting the target for some kind of
+;; TARGET-IS-DEFAULT-INPUT-P to not defaulting the target for some kind of
 ;; the compound/fuzzy completes.
 (defun ascsa-anything-noresume (&optional any-sources any-input any-prompt any-resume any-preselect any-buffer)
   (let (anything-last-sources anything-compiled-sources anything-last-buffer)
