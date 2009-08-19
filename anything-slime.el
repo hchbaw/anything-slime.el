@@ -240,8 +240,10 @@
      . (lambda ()
          (with-current-buffer (slime-connection-output-buffer)
            slime-repl-input-history)))
-    (multiline)
-    (action . ,(slime-curry #'slime-repl-history-replace 'backward))))
+    ;;(multiline)
+    (action . (lambda (cand)
+                (slime-repl-history-replace 'backward
+                                            (regexp-quote cand))))))
 (defun anything-slime-repl-history ()
   "Select an input from the SLIME repl's history and insert it."
   (interactive)
