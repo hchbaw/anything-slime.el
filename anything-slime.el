@@ -139,12 +139,11 @@
   '((name . "SLIME connections")
     (candidates
      . (lambda ()
-         (let ((default slime-default-connection)
-               (fstring "%s%2s  %-10s  %-17s  %-7s %-s")
+         (let ((fstring "%s%2s  %-10s  %-17s  %-7s %-s")
                (collect (lambda (p)
                           (cons
                            (format fstring
-                                   (if (eq default p) "*" " ")
+                                   (if (eq slime-default-connection p) "*" " ")
                                    (slime-connection-number p)
                                    (slime-connection-name p)
                                    (or (process-id p) (process-contact p))
@@ -238,12 +237,13 @@
   `((name . "SLIME repl history")
     (candidates
      . (lambda ()
-         (with-current-buffer (slime-connection-output-buffer)
+         (with-current-buffer anything-current-buffer
            slime-repl-input-history)))
     ;;(multiline)
-    (action . (lambda (cand)
-                (slime-repl-history-replace 'backward
-                                            (regexp-quote cand))))))
+    (action
+     . (lambda (cand)
+         (slime-repl-history-replace 'backward
+                                     (concat "^" (regexp-quote cand) "$"))))))
 (defun anything-slime-repl-history ()
   "Select an input from the SLIME repl's history and insert it."
   (interactive)
