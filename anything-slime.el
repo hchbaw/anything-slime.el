@@ -77,31 +77,65 @@
         ("Describe symbol" . slime-describe-symbol)
         ("Edit definition" . slime-edit-definition)))
     (persistent-action . slime-describe-symbol)
-    (volatile))
+    (volatile)
+    (candidates-in-buffer)
+    (get-line . buffer-substring))
   "SLIME complete.")
 
+(defun ascsa-asc-init-candidates-buffer-base (complete-fn insert-fn)
+  (let ((put-text-property1 (lambda (s)
+                              (put-text-property (point-at-bol 0)
+                                                 (point-at-eol 0)
+                                                 'anything-realvalue
+                                                 s))))
+    (let* ((completion-result (with-current-buffer anything-current-buffer
+                                (funcall complete-fn)))
+           (completions (first completion-result))
+           (base  (second completion-result)))
+      (with-current-buffer (anything-candidate-buffer 'global)
+        (funcall insert-fn completions base put-text-property1)))))
+(defun ascsa-asc-init-candidates-buffer-basic-insert-function (completions base put-text-property1)
+  (let ((len (length base)))
+    (dolist (c completions)
+      (let ((start (point))
+            end)
+        (insert c)
+        (setq end (point))
+        (put-text-property start (+ start len) 'face 'bold)
+        (insert "\n")
+        (funcall put-text-property1 c)))))
+(defun ascsa-asc-simple-init ()
+  (ascsa-asc-init-candidates-buffer-base
+   (slime-curry 'slime-simple-completions anything-complete-target)
+   'ascsa-asc-init-candidates-buffer-basic-insert-function))
+(defun ascsa-asc-compound-init ()
+  (ascsa-asc-init-candidates-buffer-base
+   (slime-curry 'ascsa-symbol-position-funcall 'slime-contextual-completions)
+   'ascsa-asc-init-candidates-buffer-basic-insert-function))
+(defun* ascsa-asc-fuzzy-init (&optional
+                              (insert-choice-fn
+                               'slime-fuzzy-insert-completion-choice))
+  (ascsa-asc-init-candidates-buffer-base
+   (slime-curry 'slime-fuzzy-completions anything-complete-target)
+   (lambda (completions _ put-text-property1)
+     (with-current-buffer (anything-candidate-buffer 'global)
+       (let ((max-len (loop for (x _) in completions maximize (length x))))
+         (dolist (c completions)
+           (funcall insert-choice-fn c max-len)
+           (funcall put-text-property1 (car c))))))))
 ;; These sources are private for the use of the `anything-slime-complete'
 ;; command, so I should not make `anything-c-source-*' symbols.
 (defvar anything-slime-simple-complete-source
   '((name . "SLIME simple complete")
-    (candidates
-     . (lambda ()
-         (car (slime-simple-completions anything-complete-target))))
-    (type . anything-slime-complete)))
-(defvar anything-slime-fuzzy-complete-source
-  '((name . "SLIME fuzzy complete")
-    (candidates
-     . (lambda ()
-         (mapcar #'car
-                 (car (slime-fuzzy-completions anything-complete-target)))))
+    (init . ascsa-asc-simple-init)
     (type . anything-slime-complete)))
 (defvar anything-slime-compound-complete-source
   '((name . "SLIME compound complete")
-    (candidates
-     . (lambda ()
-         (with-current-buffer anything-current-buffer
-           (car (ascsa-symbol-position-funcall
-                 #'slime-contextual-completions)))))
+    (init . ascsa-asc-compound-init)
+    (type . anything-slime-complete)))
+(defvar anything-slime-fuzzy-complete-source
+  '((name . "SLIME fuzzy complete")
+    (init . ascsa-asc-fuzzy-init)
     (type . anything-slime-complete)))
 (defvar anything-slime-complete-sources
   '(anything-slime-simple-complete-source
